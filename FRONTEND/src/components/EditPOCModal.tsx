@@ -84,8 +84,8 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
 
         try {
             const url = isEditing
-                ? `http://localhost:3002/api/pocs/${poc.id}`
-                : `http://localhost:3002/api/pocs`;
+                ? `/api/pocs/${poc.id}`
+                : `/api/pocs`;
 
             const method = isEditing ? 'PUT' : 'POST';
 

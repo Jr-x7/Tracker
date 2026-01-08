@@ -88,8 +88,8 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
 
         try {
             const url = isEditing
-                ? `http://localhost:3002/api/assets/${asset.id}`
-                : `http://localhost:3002/api/assets`;
+                ? `/api/assets/${asset.id}`
+                : `/api/assets`;
 
             const method = isEditing ? 'PUT' : 'POST';
 

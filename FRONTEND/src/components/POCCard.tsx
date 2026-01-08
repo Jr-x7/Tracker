@@ -36,7 +36,7 @@ export function POCCard({ poc, onUpdate }: POCCardProps) {
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`http://localhost:3002/api/pocs/${poc.id}`, {
+      const response = await fetch(`/api/pocs/${poc.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user?.token}`

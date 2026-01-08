@@ -33,7 +33,7 @@ export function EquipmentCard({ equipment, onClick, onUpdate }: EquipmentCardPro
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`http://localhost:3002/api/assets/${equipment.id}`, {
+      const response = await fetch(`/api/assets/${equipment.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user?.token}`

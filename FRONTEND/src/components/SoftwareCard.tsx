@@ -33,7 +33,7 @@ export function SoftwareCard({ software, onClick, onUpdate }: SoftwareCardProps)
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`http://localhost:3002/api/assets/${software.id}`, {
+      const response = await fetch(`/api/assets/${software.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user?.token}`

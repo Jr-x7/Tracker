@@ -33,7 +33,7 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:3002/api/auth/users', {
+            const response = await fetch('/api/auth/users', {
                 headers: { 'Authorization': `Bearer ${user?.token}` }
             });
             if (response.ok) {
@@ -50,7 +50,7 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
     const handleRoleUpdate = async (userId: string, newRole: string) => {
         setProcessingId(userId);
         try {
-            const response = await fetch(`http://localhost:3002/api/auth/grant-access/${userId}`, {
+            const response = await fetch(`/api/auth/grant-access/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

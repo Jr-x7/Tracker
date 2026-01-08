@@ -39,7 +39,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3002/api/auth/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -69,7 +69,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3002/api/auth/register', {
+            const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password, confirmPassword, secret }),
@@ -102,7 +102,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3002/api/auth/verify-email', {
+            const response = await fetch('/api/auth/verify-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, code: verificationCode }),

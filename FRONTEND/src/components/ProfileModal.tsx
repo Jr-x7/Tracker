@@ -18,7 +18,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         setLoading(true);
         setMessage(null);
         try {
-            const response = await fetch('http://localhost:3002/api/auth/request-access', {
+            const response = await fetch('/api/auth/request-access', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${user.token}`,
