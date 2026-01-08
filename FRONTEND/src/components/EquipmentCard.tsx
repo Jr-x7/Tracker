@@ -1,4 +1,10 @@
-import { Calendar, AlertCircle, Plus, Edit2, Loader2, Trash2 } from 'lucide-react';
+import {
+  Edit2,
+  Trash2,
+  Loader2,
+  Tag as TagIcon,
+  Plus
+} from 'lucide-react';
 import { Equipment } from '../types';
 import { HealthBadge } from './HealthBadge';
 import { CircularProgress } from './CircularProgress';
@@ -8,14 +14,15 @@ import { EditAssetModal } from './EditAssetModal';
 
 interface EquipmentCardProps {
   equipment: Equipment;
-  onClick?: () => void;
   onUpdate?: () => void;
+  onEdit?: () => void;
 }
 
-export function EquipmentCard({ equipment, onClick, onUpdate }: EquipmentCardProps) {
+export function EquipmentCard({ equipment, onUpdate, onEdit }: EquipmentCardProps) {
   const { user } = useAuth();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Removed
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDetails, setShowDetails] = useState(false); // Toggle for extra info
 
   const daysUntilCalibration = Math.ceil(
     (new Date(equipment.nextCalibration).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
@@ -54,136 +61,162 @@ export function EquipmentCard({ equipment, onClick, onUpdate }: EquipmentCardPro
   };
 
   return (
-    <>
-      <div
-        onClick={onClick}
-        className="group relative overflow-hidden rounded-2xl backdrop-blur-xl
+    <div
+      className="group relative overflow-hidden rounded-2xl backdrop-blur-xl
       bg-white/40 dark:bg-gray-800/40 border border-gray-200/50 dark:border-cyan-500/20
       hover:border-cyan-400 dark:hover:border-cyan-400 transition-all duration-500
-      hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/30 dark:hover:shadow-cyan-400/20
-      cursor-pointer animate-fadeIn"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/30 dark:hover:shadow-cyan-400/20
+      cursor-default animate-fadeIn flex flex-col"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-        <div className="relative p-6">
-          {equipment.image && (
-            <div className="mb-4 rounded-xl overflow-hidden">
-              <img
-                src={equipment.image}
-                alt={equipment.name}
-                className="w-full h-32 object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-            </div>
-          )}
-
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+      <div className="relative p-6 flex-1 flex flex-col">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors truncate">
                 {equipment.name}
               </h3>
-              {equipment.modelNumber && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-mono">
-                  Model: {equipment.modelNumber}
-                </p>
+              {equipment.category && (
+                <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                  {equipment.category}
+                </span>
               )}
-              {equipment.assetTag && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 font-mono">
-                  Tag: {equipment.assetTag}
-                </p>
-              )}
-              {equipment.serialNumber && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 font-mono">
-                  SN: {equipment.serialNumber}
-                </p>
-              )}
-              {equipment.location && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  <span className="font-semibold">Loc:</span> {equipment.location}
-                </p>
-              )}
-
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-2">
-                  <HealthBadge status={equipment.healthStatus} />
-                  {user?.role === 'admin' && (
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true); }}
-                        className="p-1.5 hover:bg-white/10 rounded-full text-gray-400 hover:text-cyan-400 transition-colors"
-                        title="Edit Equipment"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="p-1.5 hover:bg-white/10 rounded-full text-gray-400 hover:text-red-500 transition-colors"
-                        title="Delete Equipment"
-                      >
-                        {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
             </div>
-            <div className="ml-4">
-              <CircularProgress value={equipment.depreciation} size={70} strokeWidth={6} />
+
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mb-3 font-mono">
+              {equipment.assetTag && (
+                <span className="flex items-center gap-1">
+                  <TagIcon className="w-3 h-3" /> {equipment.assetTag}
+                </span>
+              )}
+              {equipment.modelNumber && <span>Mod: {equipment.modelNumber}</span>}
+              {equipment.modelCategory && <span>Cat: {equipment.modelCategory}</span>}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <HealthBadge status={equipment.healthStatus} />
+
+              {/* Actions */}
+              {user?.role === 'admin' && (
+                <div className="flex items-center gap-1 opacity-100 transition-opacity z-10">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit?.();
+                    }}
+                    className="p-1.5 hover:bg-cyan-500/10 rounded-full text-gray-400 hover:text-cyan-500 transition-colors"
+                    title="Edit"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="p-1.5 hover:bg-red-500/10 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+                    title="Delete"
+                  >
+                    {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200/50 dark:border-cyan-500/10">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-xs font-semibold">
-                {equipment.assignedTo?.name ? equipment.assignedTo.name.split(' ').map(n => n[0]).join('') : 'UA'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Assigned To</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                  {equipment.assignedTo?.name || 'Unassigned'}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200/50 dark:border-cyan-500/10">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Calendar className="w-3 h-3 text-gray-500 dark:text-gray-400" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Last Calibrated</p>
-                </div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {new Date(equipment.lastCalibrated).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-gradient-to-br from-gray-50/50 to-gray-100/50 dark:from-gray-900/30 dark:to-gray-800/30 border border-gray-200/50 dark:border-cyan-500/10">
-                <div className="flex items-center space-x-2 mb-1">
-                  <AlertCircle className="w-3 h-3 text-gray-500 dark:text-gray-400" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Next Calibration</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {daysUntilCalibration} days
-                  </p>
-                  <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${getUrgencyColor()} animate-pulse`} />
-                </div>
-              </div>
-            </div>
+          <div className="ml-4 shrink-0">
+            <CircularProgress value={equipment.depreciation} size={60} strokeWidth={5} />
           </div>
         </div>
 
-        <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-gradient-to-br from-cyan-400 to-purple-500 opacity-0 group-hover:opacity-10 rounded-full blur-2xl transition-opacity duration-500" />
-      </div>
+        {/* Core Info Grid */}
+        <div className="space-y-3 mt-auto">
+          {/* Assigned To */}
+          <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200/50 dark:border-cyan-500/10">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+              {equipment.assignedTo?.name ? equipment.assignedTo.name.split(' ').map(n => n[0]).join('') : 'UA'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Assigned To</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                {equipment.assignedTo?.name || 'Unassigned'}
+              </p>
+            </div>
+          </div>
 
-      <EditAssetModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onUpdate={() => onUpdate?.()}
-        asset={equipment}
-        type="equipment"
-      />
-    </>
+          {/* Expandable Details Section */}
+          <div className={`space-y-3 transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-80'}`}>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {equipment.location && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Location</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block" title={equipment.location}>{equipment.location}</span>
+                </div>
+              )}
+              {equipment.lifecycleStage && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Stage</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block">{equipment.lifecycleStage}</span>
+                </div>
+              )}
+              {equipment.lifecycleStageStatus && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Status Detail</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block">{equipment.lifecycleStageStatus}</span>
+                </div>
+              )}
+              {equipment.costCenter && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Cost Center</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block">{equipment.costCenter}</span>
+                </div>
+              )}
+              {equipment.department && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Department</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block">{equipment.department}</span>
+                </div>
+              )}
+              {equipment.ownedBy && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Owned By</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block">{equipment.ownedBy}</span>
+                </div>
+              )}
+              {equipment.warrantyExpiration && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Warranty Exp</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block">{equipment.warrantyExpiration}</span>
+                </div>
+              )}
+              {equipment.serialNumber && (
+                <div className="p-2 rounded bg-gray-50 dark:bg-gray-900/50">
+                  <span className="text-gray-500 block">Serial #</span>
+                  <span className="font-medium text-gray-900 dark:text-white truncate block">{equipment.serialNumber}</span>
+                </div>
+              )}
+            </div>
+
+            {equipment.notes && (
+              <div className="p-2 rounded bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20">
+                <p className="text-xs text-amber-800 dark:text-amber-200 line-clamp-2" title={equipment.notes}>
+                  {equipment.notes}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Footer / Toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowDetails(!showDetails); }}
+            className="w-full text-center text-xs text-cyan-500 hover:text-cyan-400 py-1"
+          >
+            {showDetails ? 'Show Less' : 'Show Details'}
+          </button>
+
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,88 +1,126 @@
-import { useState, useEffect } from 'react';
-import { Download, Filter } from 'lucide-react';
-import { POC } from '../types';
+import { useState, useMemo } from 'react';
+import { Plus, Filter } from 'lucide-react';
 import { POCCard, AddPOCCard } from './POCCard';
-import { fetchPOCs } from '../services/api';
+import { POC } from '../types';
 import { EditPOCModal } from './EditPOCModal';
-import { useAuth } from '../context/AuthContext';
+import { FilterModal, FilterState, initialFilterState } from './FilterModal';
 
-export function POCTab() {
-  const { user } = useAuth();
-  const [pocs, setPocs] = useState<POC[]>([]);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+interface POCTabProps {
+  pocs: POC[];
+  onAdd: () => void;
+  onUpdate: () => void;
+}
 
-  const refreshData = () => setRefreshTrigger(prev => prev + 1);
+export function POCTab({ pocs, onAdd, onUpdate }: POCTabProps) {
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterState>(initialFilterState);
 
-  useEffect(() => {
-    const loadPOCs = async () => {
-      try {
-        const data = await fetchPOCs();
-        setPocs(data);
-      } catch (error) {
-        console.error('Failed to load POCs:', error);
-      } finally {
-        setLoading(false);
-      }
+  const availableFilters = useMemo(() => {
+    // POCs don't rely have locations or owners in the same way, but we can map what we have
+    const categories = Array.from(new Set(pocs.map(p => p.category).filter(Boolean) as string[]));
+    // Hack: use 'locations' for something else or leave empty? Maybe use Primary POC as owner?
+    const owners = Array.from(new Set(pocs.map(p => p.primaryPOC).filter(Boolean) as string[]));
+
+    return {
+      locations: [],
+      categories,
+      statuses: ['healthy', 'warning', 'critical'],
+      owners
     };
-    loadPOCs();
-  }, [refreshTrigger]);
+  }, [pocs]);
 
-  const exportData = () => {
-    const dataStr = JSON.stringify(pocs, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'pocs-export.json';
-    link.click();
+  // ... loadPOCs ...
+
+  const filteredPOCs = pocs.filter(item => {
+    const matchesSearch = !filters.search ||
+      item.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      item.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      item.primaryPOC?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      item.secondaryPOC?.toLowerCase().includes(filters.search.toLowerCase());
+
+    const matchesHealth = filters.healthStatus === 'all' || item.status === filters.healthStatus;
+
+    // Status filter - mapping generic statuses if possible, otherwise generic "all" check
+    const matchesStatus = filters.status === 'all' ||
+      (filters.status === 'active' && item.status !== 'critical') ||
+      (filters.status === 'retired' && item.status === 'critical'); // Approximation
+
+    const matchesCategory = filters.category === 'all' || item.category === filters.category;
+    const matchesOwner = filters.ownedBy === 'all' || item.primaryPOC === filters.ownedBy;
+
+    return matchesSearch && matchesHealth && matchesStatus && matchesCategory && matchesOwner;
+  });
+
+  const activeFilterCount = Object.entries(filters).filter(([k, v]) => k !== 'search' && v !== 'all').length;
+
+  const handleEdit = (item: POC) => {
+    setSelectedPOC(item);
+    setIsEditModalOpen(true);
   };
 
-  if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading POCs...</div>;
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedPOC(null);
+  };
+
+  const handleSuccess = () => {
+    handleCloseModal();
+    onUpdate();
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6 animate-fadeIn">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
-            Proof of Concepts
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {pocs.length} POCs in development
-          </p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Proof of Concepts</h2>
+          <p className="text-gray-500 dark:text-gray-400">Manage ongoing POCs and demos</p>
         </div>
-
-        <div className="flex items-center space-x-3">
-          <button className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-emerald-500/20 hover:border-emerald-400 dark:hover:border-emerald-400 hover:scale-105 transition-all duration-300 backdrop-blur-sm">
-            <Filter className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter</span>
-          </button>
-
+        <div className="flex gap-3">
           <button
-            onClick={exportData}
-            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 hover:scale-105 transition-all duration-300 shadow-lg shadow-emerald-500/30"
+            onClick={() => setIsFilterOpen(true)}
+            className={`p-2 rounded-xl border transition-all relative ${activeFilterCount > 0
+              ? 'bg-cyan-50 border-cyan-200 text-cyan-600 dark:bg-cyan-900/30 dark:border-cyan-700 dark:text-cyan-400'
+              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+              }`}
           >
-            <Download className="w-4 h-4" />
-            <span className="text-sm font-medium">Export</span>
+            <Filter className="w-5 h-5" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-500 text-white text-[10px] flex items-center justify-center rounded-full font-bold">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
+
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        filters={filters}
+        onFilterChange={setFilters}
+        availableFilters={availableFilters}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pocs.map((poc) => (
-          <POCCard key={poc.id} poc={poc} onUpdate={refreshData} />
+        <AddPOCCard onClick={onAdd} />
+        {filteredPOCs.map((item) => (
+          <POCCard
+            key={item.id}
+            poc={item}
+            onUpdate={onUpdate}
+            onEdit={() => handleEdit(item)}
+          />
         ))}
-        {user?.role === 'admin' && <AddPOCCard onClick={() => setIsCreateModalOpen(true)} />}
       </div>
 
-      <EditPOCModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onUpdate={refreshData}
-      />
+      {isEditModalOpen && selectedPOC && (
+        <EditPOCModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseModal}
+          onSuccess={handleSuccess}
+          poc={selectedPOC}
+        />
+      )}
     </div>
   );
 }
