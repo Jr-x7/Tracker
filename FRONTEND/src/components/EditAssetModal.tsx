@@ -28,7 +28,18 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
     const [assignedTo, setAssignedTo] = useState(''); // Text input now
     const [lastCalibrated, setLastCalibrated] = useState('');
     const [nextCalibration, setNextCalibration] = useState('');
+
     const [depreciation, setDepreciation] = useState(0);
+
+    // New Fields
+    const [assetTag, setAssetTag] = useState('');
+    const [serialNumber, setSerialNumber] = useState('');
+    const [location, setLocation] = useState('');
+    const [status, setStatus] = useState('');
+    const [ownedBy, setOwnedBy] = useState('');
+    const [costCenter, setCostCenter] = useState('');
+    const [warrantyExpiration, setWarrantyExpiration] = useState('');
+    const [category, setCategory] = useState('');
 
     // Software specific
     const [licenseValidity, setLicenseValidity] = useState('');
@@ -48,6 +59,15 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
                 setNextCalibration(asset.nextCalibration || '');
                 setDepreciation(asset.depreciation || 0);
 
+                setAssetTag(asset.assetTag || '');
+                setSerialNumber(asset.serialNumber || '');
+                setLocation(asset.location || '');
+                setStatus(asset.status || '');
+                setOwnedBy(asset.ownedBy || '');
+                setCostCenter(asset.costCenter || '');
+                setWarrantyExpiration(asset.warrantyExpiration || '');
+                setCategory(asset.category || '');
+
                 // Software specific
                 setLicenseValidity(asset.licenseValidity || '');
                 setSoftwareType(asset.softwareType || 'Subscription');
@@ -61,6 +81,14 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
                 setLastCalibrated('');
                 setNextCalibration('');
                 setDepreciation(0);
+                setAssetTag('');
+                setSerialNumber('');
+                setLocation('');
+                setStatus('');
+                setOwnedBy('');
+                setCostCenter('');
+                setWarrantyExpiration('');
+                setCategory('');
                 setLicenseValidity('');
                 setSoftwareType('Subscription');
             }
@@ -83,7 +111,17 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
             nextCalibration: nextCalibration || undefined,
             depreciation: Number(depreciation),
             licenseValidity: type === 'software' ? (licenseValidity || undefined) : undefined,
-            softwareType: type === 'software' ? softwareType : undefined
+            depreciation: Number(depreciation),
+            licenseValidity: type === 'software' ? (licenseValidity || undefined) : undefined,
+            softwareType: type === 'software' ? softwareType : undefined,
+            assetTag,
+            serialNumber,
+            location,
+            status,
+            ownedBy,
+            costCenter,
+            warrantyExpiration,
+            category
         };
 
         try {
@@ -154,6 +192,50 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
                                     className="w-full mt-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                                     placeholder="Enter model number..."
                                 />
+                            </div>
+                        )}
+                        {type === 'equipment' && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Asset Tag</label>
+                                    <input
+                                        type="text"
+                                        value={assetTag}
+                                        onChange={(e) => setAssetTag(e.target.value)}
+                                        className="w-full mt-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Serial Number</label>
+                                    <input
+                                        type="text"
+                                        value={serialNumber}
+                                        onChange={(e) => setSerialNumber(e.target.value)}
+                                        className="w-full mt-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {type === 'equipment' && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+                                    <input
+                                        type="text"
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
+                                        className="w-full mt-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cost Center</label>
+                                    <input
+                                        type="text"
+                                        value={costCenter}
+                                        onChange={(e) => setCostCenter(e.target.value)}
+                                        className="w-full mt-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    />
+                                </div>
                             </div>
                         )}
                         <div>
@@ -255,6 +337,32 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
                             />
                         </div>
                     </div>
+                    {/* Warranty & Status */}
+                    {type === 'equipment' && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-green-500" /> Warranty Expiration
+                                </label>
+                                <input
+                                    type="date"
+                                    value={warrantyExpiration ? new Date(warrantyExpiration).toISOString().split('T')[0] : ''}
+                                    onChange={(e) => setWarrantyExpiration(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                                <input
+                                    type="text"
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    placeholder="e.g. In Use"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     {/* Depreciation */}
                     <div className="space-y-2">
@@ -288,7 +396,7 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

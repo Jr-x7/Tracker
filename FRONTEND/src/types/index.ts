@@ -13,6 +13,14 @@ export interface Equipment {
   lastCalibrated: string;
   nextCalibration: string;
   image?: string;
+  assetTag?: string;
+  serialNumber?: string;
+  location?: string;
+  status?: string;
+  ownedBy?: string;
+  costCenter?: string;
+  warrantyExpiration?: string;
+  category?: string;
 }
 
 export interface Software {

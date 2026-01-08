@@ -86,6 +86,21 @@ export function EquipmentCard({ equipment, onClick, onUpdate }: EquipmentCardPro
                   Model: {equipment.modelNumber}
                 </p>
               )}
+              {equipment.assetTag && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 font-mono">
+                  Tag: {equipment.assetTag}
+                </p>
+              )}
+              {equipment.serialNumber && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 font-mono">
+                  SN: {equipment.serialNumber}
+                </p>
+              )}
+              {equipment.location && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  <span className="font-semibold">Loc:</span> {equipment.location}
+                </p>
+              )}
 
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-2">
