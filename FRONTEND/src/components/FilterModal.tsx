@@ -12,6 +12,7 @@ interface FilterModalProps {
         statuses: string[];
         owners: string[];
     };
+    triggerRef?: React.RefObject<HTMLElement>;
 }
 
 export interface FilterState {
@@ -32,21 +33,39 @@ export const initialFilterState: FilterState = {
     ownedBy: 'all'
 };
 
-export function FilterModal({ isOpen, onClose, filters, onFilterChange, availableFilters }: FilterModalProps) {
+export function FilterModal({ isOpen, onClose, filters, onFilterChange, availableFilters, triggerRef }: FilterModalProps) {
     if (!isOpen) return null;
 
     const handleChange = (key: keyof FilterState, value: string) => {
         onFilterChange({ ...filters, [key]: value });
     };
 
-    const activeFilterCount = Object.entries(filters).filter(([k, v]) =>
-        k !== 'search' && v !== 'all'
-    ).length;
+    // Calculate position
+    const style: React.CSSProperties = {};
+    if (triggerRef?.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        style.top = rect.bottom + 8;
+        style.right = window.innerWidth - rect.right;
+        style.position = 'absolute';
+    } else {
+        style.top = '10%';
+        style.left = '50%';
+        style.transform = 'translateX(-50%)';
+        style.position = 'fixed';
+    }
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 animate-fadeIn">
+        <div
+            className="fixed inset-0 z-[100]"
+            onClick={onClose} // Close when clicking outside
+        >
+            {/* Invisible backdrop to capture outside clicks */}
+
+            <div
+                className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 animate-fadeIn"
+                style={style}
+                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+            >
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">

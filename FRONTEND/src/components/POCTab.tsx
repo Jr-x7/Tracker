@@ -121,12 +121,12 @@ export function POCTab({ pocs, onUpdate }: POCTabProps) {
         ))}
       </div>
 
-      {isEditModalOpen && selectedPOC && (
+      {isEditModalOpen && (
         <EditPOCModal
           isOpen={isEditModalOpen}
           onClose={handleCloseModal}
           onUpdate={handleSuccess}
-          poc={selectedPOC}
+          poc={selectedPOC || undefined}
         />
       )}
     </div>

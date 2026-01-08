@@ -9,6 +9,8 @@ import { TabType, Equipment, Software, POC } from './types';
 import { useAuth } from './context/AuthContext';
 import { LoginPage } from './components/LoginPage';
 
+import { BackToTop } from './components/BackToTop';
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('equipment');
   const { user, isLoading } = useAuth();
@@ -66,25 +68,22 @@ function App() {
         <HeroStats />
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <div className="animate-fadeIn">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
           {activeTab === 'equipment' && (
             <EquipmentTab
               equipment={equipment}
-              onAdd={() => { }}
               onUpdate={fetchData}
             />
           )}
           {activeTab === 'software' && (
             <SoftwareTab
               software={software}
-              onAdd={() => { }}
               onUpdate={fetchData}
             />
           )}
           {activeTab === 'pocs' && (
             <POCTab
               pocs={pocs}
-              onAdd={() => { }}
               onUpdate={fetchData}
             />
           )}
@@ -97,6 +96,10 @@ function App() {
             </p>
           </div>
         </div>
+        import {BackToTop} from './components/BackToTop';
+
+        // ... (inside App function, before closing div)
+        <BackToTop />
       </div>
     </div>
   );

@@ -7,11 +7,12 @@ import { FilterModal, FilterState, initialFilterState } from './FilterModal';
 
 interface EquipmentTabProps {
   equipment: Equipment[];
-  onAdd?: () => void; // Optional or deprecated
+  onAdd?: () => void;
   onUpdate: () => void;
 }
 
 export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
 
@@ -19,6 +20,7 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
     setSelectedEquipment(null);
     setIsEditModalOpen(true);
   };
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
 
@@ -26,7 +28,6 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
   const availableFilters = useMemo(() => {
     const locations = Array.from(new Set(equipment.map(e => e.location).filter(Boolean) as string[]));
     const categories = Array.from(new Set(equipment.map(e => e.modelCategory || e.category).filter(Boolean) as string[]));
-    // Statuses are hardcoded in types but could be dynamic if needed
     const statuses = ['active', 'maintenance', 'retired'];
     const owners = Array.from(new Set(equipment.map(e => e.ownedBy).filter(Boolean) as string[]));
 
@@ -43,7 +44,6 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
 
     const matchesHealth = filters.healthStatus === 'all' || item.healthStatus === filters.healthStatus;
 
-    // Status mapping might need adjustment based on exact strings in DB vs UI
     const matchesStatus = filters.status === 'all' || item.status === filters.status || item.lifecycleStageStatus === filters.status;
 
     const matchesLocation = filters.location === 'all' || item.location === filters.location;
@@ -81,6 +81,7 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
         </div>
         <div className="flex gap-3">
           <button
+            ref={filterButtonRef}
             onClick={() => setIsFilterOpen(true)}
             className={`p-2 rounded-xl border transition-all relative ${activeFilterCount > 0
               ? 'bg-cyan-50 border-cyan-200 text-cyan-600 dark:bg-cyan-900/30 dark:border-cyan-700 dark:text-cyan-400'
@@ -94,7 +95,6 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
               </span>
             )}
           </button>
-          {/* Add button handled by AddCard usually, but good to have header action too if needed */}
         </div>
       </div>
 
@@ -104,6 +104,7 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
         filters={filters}
         onFilterChange={setFilters}
         availableFilters={availableFilters}
+        triggerRef={filterButtonRef}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -118,12 +119,13 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
         ))}
       </div>
 
-      {isEditModalOpen && selectedEquipment && (
+      {isEditModalOpen && (
         <EditAssetModal
           isOpen={isEditModalOpen}
           onClose={handleCloseModal}
           onUpdate={handleSuccess}
-          asset={selectedEquipment}
+          asset={selectedEquipment || undefined}
+          type="equipment"
         />
       )}
     </div>

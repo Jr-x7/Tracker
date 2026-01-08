@@ -106,13 +106,15 @@ export function SoftwareTab({ software, onUpdate }: SoftwareTabProps) {
         availableFilters={availableFilters}
       />
 
-      <EditAssetModal
-        isOpen={isEditModalOpen}
-        onClose={handleCloseModal}
-        onUpdate={handleSuccess}
-        asset={selectedSoftware}
-        type="software"
-      />
+      {isEditModalOpen && (
+        <EditAssetModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseModal}
+          onUpdate={handleSuccess}
+          asset={selectedSoftware || undefined}
+          type="software"
+        />
+      )}
     </div>
   );
 }

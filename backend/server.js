@@ -16,7 +16,8 @@ const { protect, admin } = require('./middleware/authMiddleware');
 
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000; // Hardcoded for debugging
+console.log("DEBUG: Hardcoded PORT to", PORT);
 
 app.use(cors());
 app.use(express.json());
