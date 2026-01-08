@@ -1,4 +1,4 @@
-import { TrendingUp, Activity, DollarSign, Calendar } from 'lucide-react';
+import { Activity, DollarSign, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface StatCardProps {
@@ -75,11 +75,7 @@ function StatCard({ title, value, suffix = '', icon, gradient, delay = 0 }: Stat
           </div>
         </div>
 
-        <div className="mt-4 flex items-center text-sm">
-          <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-          <span className="text-green-600 dark:text-green-400 font-medium">+12.5%</span>
-          <span className="text-gray-500 dark:text-gray-400 ml-2">vs last month</span>
-        </div>
+
       </div>
 
       <div className={`absolute -right-8 -bottom-8 w-32 h-32 bg-gradient-to-br ${gradient} opacity-5 rounded-full blur-2xl group-hover:opacity-20 transition-opacity duration-500`} />
