@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Copy, Terminal, Edit2, Trash2, Loader2, Activity, User, Users } from 'lucide-react';
+import { Copy, Terminal, Edit2, Trash2, Loader2, User, Users } from 'lucide-react';
 import { POC } from '../types';
 import { HealthBadge } from './HealthBadge';
-import { CircularProgress } from './CircularProgress';
+
 import { useAuth } from '../context/AuthContext';
 
 
@@ -108,9 +108,7 @@ export function POCCard({ poc, onUpdate, onEdit }: POCCardProps) {
             </div>
           </div>
 
-          <div className="ml-4 shrink-0">
-            <CircularProgress value={poc.depreciation} size={60} strokeWidth={5} />
-          </div>
+
         </div>
 
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 min-h-[2.5rem]">
