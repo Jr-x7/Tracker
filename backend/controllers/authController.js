@@ -4,6 +4,12 @@ const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 const crypto = require('crypto');
 
+// Helper to strip Cosmos system fields
+const sanitizeUser = (user) => {
+    const { _rid, _self, _etag, _attachments, _ts, ...cleanUser } = user;
+    return cleanUser;
+};
+
 // Generate JWT
 const generateToken = (id, email, role) => {
   return jwt.sign({ id, email, role }, process.env.JWT_SECRET, {
@@ -124,7 +130,9 @@ const verifyEmail = async (req, res) => {
         user.isVerified = true;
         user.verificationCode = undefined; // Clear code
         
-        await usersContainer.item(user.id).replace(user);
+        // Fix: Use ID as Partition Key and sanitize
+        const cleanUser = sanitizeUser(user);
+        await usersContainer.item(user.id, user.id).replace(cleanUser);
 
         res.status(200).json({ message: 'Email verified successfully. Waiting for Admin approval.' });
 
@@ -206,7 +214,8 @@ const forgotPassword = async (req, res) => {
         user.resetPasswordToken = resetCode; 
         user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 
-        await usersContainer.item(user.id).replace(user);
+        const cleanUser = sanitizeUser(user);
+        await usersContainer.item(user.id, user.id).replace(cleanUser);
 
         // Send Email
         const message = `Your password reset code is: ${resetCode}`;
@@ -222,7 +231,10 @@ const forgotPassword = async (req, res) => {
             console.error("Email send failed:", emailError);
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
-            await usersContainer.item(user.id).replace(user);
+            
+            const revertedUser = sanitizeUser(user);
+            await usersContainer.item(user.id, user.id).replace(revertedUser);
+            
             return res.status(500).json({ message: 'Email could not be sent' });
         }
 
@@ -262,7 +274,8 @@ const resetPassword = async (req, res) => {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
 
-        await usersContainer.item(user.id).replace(user);
+        const cleanUser = sanitizeUser(user);
+        await usersContainer.item(user.id, user.id).replace(cleanUser);
 
         res.status(200).json({ message: 'Password updated successfully' });
 
@@ -288,7 +301,8 @@ const grantAccess = async (req, res) => {
     const { role, status } = req.body; // 'admin'/'viewer', 'active'/'rejected'
 
     try {
-        const { resource: user } = await usersContainer.item(userId).read();
+        // Fix: Use PK in read
+        const { resource: user } = await usersContainer.item(userId, userId).read();
         
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -297,7 +311,8 @@ const grantAccess = async (req, res) => {
         if (role) user.role = role;
         if (status) user.status = status;
 
-        const { resource: updatedUser } = await usersContainer.item(userId).replace(user);
+        const cleanUser = sanitizeUser(user);
+        const { resource: updatedUser } = await usersContainer.item(userId, userId).replace(cleanUser);
 
         res.json({
             _id: updatedUser.id,
@@ -318,7 +333,8 @@ const grantAccess = async (req, res) => {
 // @access  Private
 const requestAdminAccess = async (req, res) => {
     try {
-        const { resource: user } = await usersContainer.item(req.user.id).read();
+        // Fix: Use PK in read
+        const { resource: user } = await usersContainer.item(req.user.id, req.user.id).read();
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -330,7 +346,8 @@ const requestAdminAccess = async (req, res) => {
 
         user.accessRequested = true;
         
-        await usersContainer.item(user.id).replace(user);
+        const cleanUser = sanitizeUser(user);
+        await usersContainer.item(user.id, user.id).replace(cleanUser);
 
         res.status(200).json({ message: 'Admin access requested successfully' });
 
