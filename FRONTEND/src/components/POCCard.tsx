@@ -252,16 +252,16 @@ export function AddPOCCard({ onClick }: { onClick: () => void }) {
     <button
       onClick={onClick}
       className="group relative overflow-hidden rounded-2xl backdrop-blur-xl
-      bg-white/20 dark:bg-gray-800/20 border-2 border-dashed border-gray-300 dark:border-emerald-500/30
-      hover:border-emerald-400 dark:hover:border-emerald-400 transition-all duration-500
-      hover:shadow-2xl hover:shadow-emerald-500/20 dark:hover:shadow-emerald-400/10
-      min-h-[180px] flex items-center justify-center"
+      bg-white/20 dark:bg-gray-800/20 border-2 border-dashed border-gray-300 dark:border-cyan-500/30
+      hover:border-cyan-400 dark:hover:border-cyan-400 transition-all duration-500
+      hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20 dark:hover:shadow-cyan-400/10
+      min-h-[350px] flex items-center justify-center"
     >
       <div className="text-center">
-        <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-emerald-500/30">
+        <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-500/30">
           <Plus className="w-8 h-8 text-white" />
         </div>
-        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+        <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
           Add New POC
         </p>
       </div>

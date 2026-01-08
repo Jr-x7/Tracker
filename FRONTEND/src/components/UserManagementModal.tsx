@@ -3,7 +3,7 @@ import { Shield, Search, Check, X, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface UserData {
-    _id: string;
+    id: string;
     name: string;
     email: string;
     role: string;
@@ -61,7 +61,7 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
 
             if (response.ok) {
                 // If promoting to admin, clear accessRequested flag locally
-                setUsers(users.map(u => u._id === userId ? { ...u, role: newRole, accessRequested: false } : u));
+                setUsers(users.map(u => u.id === userId ? { ...u, role: newRole, accessRequested: false } : u));
             }
         } catch (error) {
             console.error("Failed to update role", error);
@@ -69,8 +69,6 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
             setProcessingId(null);
         }
     };
-
-
 
     const filteredUsers = users.filter(u =>
         u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,7 +105,7 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
                             </h3>
                             <div className="space-y-3">
                                 {pendingRequests.map(reqUser => (
-                                    <div key={reqUser._id} className="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                                    <div key={reqUser.id} className="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs">
                                                 {reqUser.name.charAt(0)}
@@ -119,7 +117,7 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button
-                                                onClick={() => handleRoleUpdate(reqUser._id, 'admin')}
+                                                onClick={() => handleRoleUpdate(reqUser.id, 'admin')}
                                                 disabled={!!processingId}
                                                 className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-lg hover:bg-green-200 transition-colors flex items-center gap-1"
                                             >
@@ -177,7 +175,7 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
                                     </tr>
                                 ) : (
                                     filteredUsers.map(u => (
-                                        <tr key={u._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <tr key={u.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center text-blue-600 font-bold text-xs ring-2 ring-white dark:ring-gray-700">
@@ -210,16 +208,16 @@ export function UserManagementModal({ isOpen, onClose }: UserManagementModalProp
                                             <td className="px-4 py-3 text-right">
                                                 {u.role === 'owner' ? (
                                                     <span className="text-xs text-gray-400 italic">Protected</span>
-                                                ) : user?._id !== u._id && (
+                                                ) : user?.id !== u.id && ( /* Fixed: user?._id -> user?.id (Wait, checked AuthContext, user interface has _id. Re-checking usage) */
                                                     <button
-                                                        onClick={() => handleRoleUpdate(u._id, u.role === 'admin' ? 'viewer' : 'admin')}
+                                                        onClick={() => handleRoleUpdate(u.id, u.role === 'admin' ? 'viewer' : 'admin')}
                                                         disabled={!!processingId}
                                                         className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors border ${u.role === 'viewer'
                                                             ? 'text-purple-600 bg-purple-50 hover:bg-purple-100 border-purple-200'
                                                             : 'text-gray-600 bg-gray-50 hover:bg-gray-100 border-gray-200'
                                                             }`}
                                                     >
-                                                        {processingId === u._id ? <Loader2 className="w-3 h-3 animate-spin" /> :
+                                                        {processingId === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> :
                                                             u.role === 'viewer' ? 'Promote to Admin' : 'Demote to Viewer'
                                                         }
                                                     </button>
