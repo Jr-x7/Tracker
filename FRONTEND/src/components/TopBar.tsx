@@ -84,7 +84,7 @@ export function TopBar({ onRefresh }: TopBarProps) {
                   <p className="text-xs font-semibold text-cyan-500 mt-1 uppercase">{user?.role}</p>
                 </div>
 
-                {user?.role === 'admin' && (
+                {(user?.role === 'admin' || user?.role === 'owner') && (
                   <button
                     onClick={() => setIsUserModalOpen(true)}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 flex items-center space-x-2 transition-colors"
