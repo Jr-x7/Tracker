@@ -1,6 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const crypto = require('crypto');
+
+// Polyfill for Node < 19 where global.crypto is missing
+if (!global.crypto) {
+  global.crypto = crypto;
+}
 
 dotenv.config();
 
