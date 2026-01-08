@@ -246,7 +246,7 @@ app.delete('/api/pocs/:id', protect, admin, async (req, res) => {
 
 // SPA Fallback: Serve index.html for any unknown routes
 const path = require('path');
-app.get('*', (req, res) => {
+app.get(/(.*)/, (req, res) => {
     res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
