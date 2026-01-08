@@ -41,6 +41,9 @@ export interface POC {
   status: HealthStatus;
   depreciation: number;
   image?: string;
+  primaryPOC?: string;
+  secondaryPOC?: string;
+  category?: string;
 }
 
 export type TabType = 'equipment' | 'software' | 'pocs';

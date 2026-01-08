@@ -138,6 +138,25 @@ export function POCCard({ poc, onUpdate }: POCCardProps) {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {poc.primaryPOC && (
+                  <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-500/10">
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1">Primary POC</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{poc.primaryPOC}</p>
+                  </div>
+                )}
+                {poc.secondaryPOC && (
+                  <div className="p-3 rounded-lg bg-purple-50/50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-500/10">
+                    <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold mb-1">Secondary POC</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{poc.secondaryPOC}</p>
+                  </div>
+                )}
+                {poc.category && (
+                  <div className="col-span-full p-3 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-1">Category</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{poc.category}</p>
+                  </div>
+                )}
+
                 <div className="p-4 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200/50 dark:border-emerald-500/10">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">

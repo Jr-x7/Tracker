@@ -1,0 +1,62 @@
+{
+  "sheetName": "Sheet1",
+  "totalRows": 50,
+  "keys": [
+    "Asset tag",
+    "Serial number",
+    "Assigned to",
+    "Assigned to Display",
+    "Life Cycle Stage",
+    "Life Cycle Stage Status",
+    "Location",
+    "Warranty expiration",
+    "Display name",
+    "Model category",
+    "Owned by",
+    "Cost center Display",
+    "Current Status"
+  ],
+  "sampleData": [
+    {
+      "Asset tag": "TSPIN00062",
+      "Serial number": 6749210257,
+      "Assigned to": "Anand Kumar Jagadeesan",
+      "Assigned to Display": 146628,
+      "Life Cycle Stage": "Operational",
+      "Life Cycle Stage Status": "In Use",
+      "Location": "COG KITS Campus(CKC)SDB2&3 SEZ",
+      "Warranty expiration": "03-16-2022",
+      "Display name": "Microsoft Surface Book 3",
+      "Model category": "Computer",
+      "Owned by": "Dinesh Babu Thiyagarajan",
+      "Cost center Display": 1000268448,
+      "Current Status": "Available at CKC"
+    },
+    {
+      "Asset tag": 8939842359,
+      "Serial number": 8939842359,
+      "Assigned to": "Anand Kumar Jagadeesan",
+      "Assigned to Display": 146628,
+      "Life Cycle Stage": "Operational",
+      "Life Cycle Stage Status": "In Use",
+      "Location": "COG KITS Campus(CKC)SDB2&3 SEZ",
+      "Display name": "Vodafone Vodafone SIM card - Cognizant Std Model",
+      "Model category": "SIM Card",
+      "Owned by": "Dinesh Babu Thiyagarajan",
+      "Cost center Display": 1000268448
+    },
+    {
+      "Asset tag": 7397249687,
+      "Serial number": 861376039665767,
+      "Assigned to": "Anand Kumar Jagadeesan",
+      "Assigned to Display": 146628,
+      "Life Cycle Stage": "Operational",
+      "Life Cycle Stage Status": "In Use",
+      "Location": "COG KITS Campus(CKC)SDB2&3 SEZ",
+      "Warranty expiration": 43750,
+      "Model category": "Data Card",
+      "Owned by": "Dinesh Babu Thiyagarajan",
+      "Cost center Display": 1000268448
+    }
+  ]
+}

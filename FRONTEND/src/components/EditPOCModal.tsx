@@ -26,6 +26,9 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
     const [backendCommand, setBackendCommand] = useState('');
     const [envCommand, setEnvCommand] = useState('');
     const [depreciation, setDepreciation] = useState(0);
+    const [primaryPOC, setPrimaryPOC] = useState('');
+    const [secondaryPOC, setSecondaryPOC] = useState('');
+    const [category, setCategory] = useState('');
 
     const isEditing = !!poc;
 
@@ -44,6 +47,9 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
                 setBackendCommand(poc.backendCommand || '');
                 setEnvCommand(poc.envCommand || '');
                 setDepreciation(poc.depreciation || 0);
+                setPrimaryPOC(poc.primaryPOC || '');
+                setSecondaryPOC(poc.secondaryPOC || '');
+                setCategory(poc.category || '');
             } else {
                 // Reset for creation
                 setName('');
@@ -58,6 +64,9 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
                 setBackendCommand('');
                 setEnvCommand('');
                 setDepreciation(0);
+                setPrimaryPOC('');
+                setSecondaryPOC('');
+                setCategory('');
             }
         }
     }, [isOpen, poc]);
@@ -79,7 +88,10 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
             backendCommand,
             envCommand,
             runCommand: frontendCommand, // Keep backward compatibility
-            depreciation: Number(depreciation)
+            depreciation: Number(depreciation),
+            primaryPOC,
+            secondaryPOC,
+            category
         };
 
         try {
@@ -138,93 +150,111 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
                             <input type="text" value={image} onChange={(e) => setImage(e.target.value)}
                                 className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
                         </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
-                            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-cyan-500" /> Health
-                            </label>
-                            <select value={healthStatus} onChange={(e) => setHealthStatus(e.target.value)}
-                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500">
-                                <option value="healthy">Healthy</option>
-                                <option value="warning">Warning</option>
-                                <option value="critical">Critical</option>
-                            </select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Primary POC</label>
+                                <input type="text" value={primaryPOC} onChange={(e) => setPrimaryPOC(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Secondary POC</label>
+                                <input type="text" value={secondaryPOC} onChange={(e) => setSecondaryPOC(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                            <select value={status} onChange={(e) => setStatus(e.target.value)}
-                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500">
-                                <option value="active">Active</option>
-                                <option value="completed">Completed</option>
-                                <option value="on-hold">On Hold</option>
-                            </select>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                            <input type="text" value={category} onChange={(e) => setCategory(e.target.value)}
+                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
                         </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <Monitor className="w-4 h-4 text-purple-500" /> Laptop
-                        </label>
-                        <input type="text" value={laptop} onChange={(e) => setLaptop(e.target.value)}
-                            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
-                    </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
+                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <Activity className="w-4 h-4 text-cyan-500" /> Health
+                                </label>
+                                <select value={healthStatus} onChange={(e) => setHealthStatus(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500">
+                                    <option value="healthy">Healthy</option>
+                                    <option value="warning">Warning</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                                <select value={status} onChange={(e) => setStatus(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500">
+                                    <option value="active">Active</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="on-hold">On Hold</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-blue-500" /> Frontend Path
+                                <Monitor className="w-4 h-4 text-purple-500" /> Laptop
                             </label>
-                            <input type="text" value={frontendPath} onChange={(e) => setFrontendPath(e.target.value)}
-                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" />
+                            <input type="text" value={laptop} onChange={(e) => setLaptop(e.target.value)}
+                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-purple-500" /> Backend Path
-                            </label>
-                            <input type="text" value={backendPath} onChange={(e) => setBackendPath(e.target.value)}
-                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm" />
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-blue-500" /> Frontend Path
+                                </label>
+                                <input type="text" value={frontendPath} onChange={(e) => setFrontendPath(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-purple-500" /> Backend Path
+                                </label>
+                                <input type="text" value={backendPath} onChange={(e) => setBackendPath(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm" />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <Terminal className="w-4 h-4 text-green-500" /> Frontend Command
+                                </label>
+                                <input type="text" value={frontendCommand} onChange={(e) => setFrontendCommand(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                                    placeholder="npm run dev"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <Terminal className="w-4 h-4 text-orange-500" /> Backend Command
+                                </label>
+                                <input type="text" value={backendCommand} onChange={(e) => setBackendCommand(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500 font-mono text-sm"
+                                    placeholder="python app.py"
+                                />
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <Terminal className="w-4 h-4 text-green-500" /> Frontend Command
+                                <Terminal className="w-4 h-4 text-purple-500" /> Environment Activation Command
                             </label>
-                            <input type="text" value={frontendCommand} onChange={(e) => setFrontendCommand(e.target.value)}
-                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
-                                placeholder="npm run dev"
+                            <input type="text" value={envCommand} onChange={(e) => setEnvCommand(e.target.value)}
+                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
+                                placeholder="source venv/bin/activate or .\venv\Scripts\activate"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <Terminal className="w-4 h-4 text-orange-500" /> Backend Command
-                            </label>
-                            <input type="text" value={backendCommand} onChange={(e) => setBackendCommand(e.target.value)}
-                                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500 font-mono text-sm"
-                                placeholder="python app.py"
-                            />
-                        </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <Terminal className="w-4 h-4 text-purple-500" /> Environment Activation Command
-                        </label>
-                        <input type="text" value={envCommand} onChange={(e) => setEnvCommand(e.target.value)}
-                            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500 font-mono text-sm"
-                            placeholder="source venv/bin/activate or .\venv\Scripts\activate"
-                        />
                     </div>
-
                     <div className="pt-4 flex justify-end gap-3 sticky bottom-0 bg-white dark:bg-gray-900 z-10 border-t border-gray-200 dark:border-gray-800">
                         <button type="button" onClick={onClose}
                             className="px-4 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
