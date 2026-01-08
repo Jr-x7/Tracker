@@ -6,7 +6,7 @@ interface LoginPageProps {
     onLoginSuccess: () => void;
 }
 
-type AuthView = 'LOGIN' | 'REGISTER' | 'VERIFY';
+type AuthView = 'LOGIN' | 'REGISTER' | 'VERIFY' | 'FORGOT_PASSWORD' | 'RESET_PASSWORD';
 
 export function LoginPage({ onLoginSuccess }: LoginPageProps) {
     const [view, setView] = useState<AuthView>('LOGIN');
@@ -86,7 +86,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 onLoginSuccess();
             } else {
                 // Otherwise go to Verify
-                setSuccessMsg("Registration successful! Check console/email for code.");
+                setSuccessMsg("Registration successful! Check email for code.");
                 setView('VERIFY');
             }
         } catch (err: any) {
@@ -128,6 +128,64 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         }
     };
 
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const response = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Request failed');
+            }
+
+            setSuccessMsg("Reset code sent! Check your email.");
+            setView('RESET_PASSWORD');
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const response = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code: verificationCode, newPassword: password }),
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Reset failed');
+            }
+
+            setSuccessMsg("Password reset successfully! Redirecting to login...");
+            setTimeout(() => {
+                setView('LOGIN');
+                resetForm();
+                setError('');
+                setSuccessMsg("Password updated. Please login.");
+            }, 2000);
+
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background Elements */}
@@ -145,11 +203,15 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                         {view === 'LOGIN' && 'Welcome Back'}
                         {view === 'REGISTER' && 'Create Account'}
                         {view === 'VERIFY' && 'Verify Email'}
+                        {view === 'FORGOT_PASSWORD' && 'Reset Password'}
+                        {view === 'RESET_PASSWORD' && 'Set New Password'}
                     </h2>
                     <p className="text-gray-400">
                         {view === 'LOGIN' && 'Enter your credentials to continue'}
                         {view === 'REGISTER' && 'Sign up to access the tracker'}
                         {view === 'VERIFY' && `Code sent to ${email}`}
+                        {view === 'FORGOT_PASSWORD' && 'We will send a code to your email'}
+                        {view === 'RESET_PASSWORD' && `Enter code sent to ${email}`}
                     </p>
                 </div>
 
@@ -184,6 +246,12 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                                     className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-cyan-500 transition-colors"
                                     placeholder="••••••••" required />
                             </div>
+                        </div>
+                        <div className="flex justify-end">
+                            <button type="button" onClick={() => { setView('FORGOT_PASSWORD'); setError(''); setSuccessMsg(''); }}
+                                className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+                                Forgot Password?
+                            </button>
                         </div>
                         <button type="submit" disabled={loading}
                             className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 disabled:opacity-50">
@@ -264,6 +332,51 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                     </form>
                 )}
 
+                {view === 'FORGOT_PASSWORD' && (
+                    <form onSubmit={handleForgotPassword} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-300">Email Address</label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                                    placeholder="name@company.com" required />
+                            </div>
+                        </div>
+                        <button type="submit" disabled={loading}
+                            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 disabled:opacity-50">
+                            {loading ? 'Sending Code...' : 'Send Reset Code'}
+                        </button>
+                    </form>
+                )}
+
+                {view === 'RESET_PASSWORD' && (
+                    <form onSubmit={handleResetPassword} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-300">Reset Code</label>
+                            <div className="relative">
+                                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input type="text" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-cyan-500 transition-colors text-center text-xl tracking-widest"
+                                    placeholder="123456" maxLength={6} required />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-300">New Password</label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                                    placeholder="••••••••" required />
+                            </div>
+                        </div>
+                        <button type="submit" disabled={loading}
+                            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 disabled:opacity-50">
+                            {loading ? 'Resetting...' : 'Set New Password'}
+                        </button>
+                    </form>
+                )}
+
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-400">
                         {view === 'LOGIN' ? "Don't have an account? " :
@@ -272,8 +385,10 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                         }
                         <button onClick={() => {
                             if (view === 'LOGIN') setView('REGISTER');
-                            else setView('LOGIN'); // Back to login from register or verify
-                            resetForm();
+                            else {
+                                setView('LOGIN'); // Back to login from register, verify, forgot, reset
+                                resetForm();
+                            }
                         }}
                             className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
                             {view === 'LOGIN' ? 'Sign Up' : 'Sign In'}

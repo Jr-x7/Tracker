@@ -11,7 +11,7 @@ if (!global.crypto) {
 dotenv.config();
 
 const { assetsContainer, pocsContainer, getItems, initializeDatabase } = require('./config/db');
-const { registerUser, loginUser, getMe, grantAccess, getUsers, verifyEmail, requestAdminAccess } = require('./controllers/authController');
+const { registerUser, loginUser, getMe, grantAccess, getUsers, verifyEmail, requestAdminAccess, forgotPassword, resetPassword } = require('./controllers/authController');
 const { protect, admin } = require('./middleware/authMiddleware');
 
 
@@ -94,6 +94,8 @@ app.get('/api/pocs', async (req, res) => {
 app.post('/api/auth/register', registerUser);
 app.post('/api/auth/login', loginUser);
 app.post('/api/auth/verify-email', verifyEmail);
+app.post('/api/auth/forgot-password', forgotPassword);
+app.post('/api/auth/reset-password', resetPassword);
 app.get('/api/auth/me', protect, getMe);
 app.get('/api/auth/users', protect, admin, getUsers);
 app.put('/api/auth/grant-access/:id', protect, admin, grantAccess);

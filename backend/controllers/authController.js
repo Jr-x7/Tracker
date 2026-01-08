@@ -1,6 +1,8 @@
 const { usersContainer, getItems } = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto');
 
 // Generate JWT
 const generateToken = (id, email, role) => {
@@ -41,10 +43,24 @@ const registerUser = async (req, res) => {
 
     // Generate Verification Code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(`[EMAIL MOCK] Verification Code for ${email}: ${verificationCode}`);
+    
+    // Send Email
+    const message = `Your verification code is: ${verificationCode}`;
+    try {
+        await sendEmail({
+            email,
+            subject: 'Tracker App - Email Verification',
+            message,
+            html: `<h1>Email Verification</h1><p>Your verification code is:</p><h2>${verificationCode}</h2>`
+        });
+    } catch (emailError) {
+        console.error("Email send failed:", emailError);
+        // Continue creating user, but warn logging
+    }
 
     // User schema
     const newUser = {
+      id: crypto.randomUUID(), // Explicit ID generation to be safe
       name,
       email,
       password: hashedPassword,
@@ -71,7 +87,7 @@ const registerUser = async (req, res) => {
       role: createdUser.role,
       status: createdUser.status,
       isVerified: createdUser.isVerified,
-      message: "Registration successful. Please verify your email."
+      message: "Registration successful. Please check your email for the verification code."
     });
   } catch (error) {
     console.error("Error creating user:", error);
@@ -165,6 +181,98 @@ const loginUser = async (req, res) => {
   }
 };
 
+// @desc    Forgot Password
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const querySpec = {
+            query: "SELECT * FROM c WHERE c.email = @email",
+            parameters: [{ name: "@email", value: email }]
+        };
+        const users = await getItems(usersContainer, querySpec);
+        const user = users[0];
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Generate Reset Code
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Save code and expiry (10 mins)
+        user.resetPasswordToken = resetCode; 
+        user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+        await usersContainer.item(user.id).replace(user);
+
+        // Send Email
+        const message = `Your password reset code is: ${resetCode}`;
+        try {
+            await sendEmail({
+                email,
+                subject: 'Tracker App - Password Reset Code',
+                message,
+                html: `<h1>Password Reset</h1><p>Your reset code is:</p><h2>${resetCode}</h2><p>This code expires in 10 minutes.</p>`
+            });
+            res.status(200).json({ message: 'Reset code sent to email' });
+        } catch (emailError) {
+            console.error("Email send failed:", emailError);
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await usersContainer.item(user.id).replace(user);
+            return res.status(500).json({ message: 'Email could not be sent' });
+        }
+
+    } catch (error) {
+        console.error("Forgot Password error:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+// @desc    Reset Password
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+    const { email, code, newPassword } = req.body;
+
+    try {
+        const querySpec = {
+            query: "SELECT * FROM c WHERE c.email = @email",
+            parameters: [{ name: "@email", value: email }]
+        };
+        const users = await getItems(usersContainer, querySpec);
+        const user = users[0];
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.resetPasswordToken !== code || user.resetPasswordExpire < Date.now()) {
+            return res.status(400).json({ message: 'Invalid or expired token' });
+        }
+
+        // Set new password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        
+        // Clear token
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await usersContainer.item(user.id).replace(user);
+
+        res.status(200).json({ message: 'Password updated successfully' });
+
+    } catch (error) {
+        console.error("Reset Password error:", error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+
 // @desc    Get user data
 // @route   GET /api/auth/me
 // @access  Private
@@ -255,5 +363,7 @@ module.exports = {
   grantAccess,
   getUsers,
   verifyEmail,
-  requestAdminAccess
+  requestAdminAccess,
+  forgotPassword,
+  resetPassword
 };
