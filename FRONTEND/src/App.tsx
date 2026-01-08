@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TopBar } from './components/TopBar';
 import { HeroStats } from './components/HeroStats';
 import { TabNavigation } from './components/TabNavigation';
 import { EquipmentTab } from './components/EquipmentTab';
 import { SoftwareTab } from './components/SoftwareTab';
 import { POCTab } from './components/POCTab';
-import { TabType } from './types';
+import { TabType, Equipment, Software, POC } from './types';
 import { useAuth } from './context/AuthContext';
 import { LoginPage } from './components/LoginPage';
 
@@ -13,8 +13,36 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabType>('equipment');
   const { user, isLoading } = useAuth();
 
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [software, setSoftware] = useState<Software[]>([]);
+  const [pocs, setPocs] = useState<POC[]>([]);
+
+  const fetchData = async () => {
+    if (!user?.token) return;
+
+    try {
+      const headers = { 'Authorization': `Bearer ${user.token}` };
+
+      const [eqRes, swRes, pocRes] = await Promise.all([
+        fetch('/api/equipment', { headers }),
+        fetch('/api/software', { headers }),
+        fetch('/api/pocs', { headers })
+      ]);
+
+      if (eqRes.ok) setEquipment(await eqRes.json());
+      if (swRes.ok) setSoftware(await swRes.json());
+      if (pocRes.ok) setPocs(await pocRes.json());
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [user]);
+
   const handleRefresh = () => {
-    window.location.reload();
+    fetchData();
   };
 
   if (isLoading) {
@@ -39,9 +67,27 @@ function App() {
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="animate-fadeIn">
-          {activeTab === 'equipment' && <EquipmentTab />}
-          {activeTab === 'software' && <SoftwareTab />}
-          {activeTab === 'pocs' && <POCTab />}
+          {activeTab === 'equipment' && (
+            <EquipmentTab
+              equipment={equipment}
+              onAdd={() => { }}
+              onUpdate={fetchData}
+            />
+          )}
+          {activeTab === 'software' && (
+            <SoftwareTab
+              software={software}
+              onAdd={() => { }}
+              onUpdate={fetchData}
+            />
+          )}
+          {activeTab === 'pocs' && (
+            <POCTab
+              pocs={pocs}
+              onAdd={() => { }}
+              onUpdate={fetchData}
+            />
+          )}
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -55,6 +101,5 @@ function App() {
     </div>
   );
 }
-
 
 export default App;

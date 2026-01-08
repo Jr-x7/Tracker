@@ -7,13 +7,18 @@ import { FilterModal, FilterState, initialFilterState } from './FilterModal';
 
 interface EquipmentTabProps {
   equipment: Equipment[];
-  onAdd: () => void;
+  onAdd?: () => void; // Optional or deprecated
   onUpdate: () => void;
 }
 
-export function EquipmentTab({ equipment, onAdd, onUpdate }: EquipmentTabProps) {
+export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+
+  const handleAdd = () => {
+    setSelectedEquipment(null);
+    setIsEditModalOpen(true);
+  };
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
 
@@ -102,7 +107,7 @@ export function EquipmentTab({ equipment, onAdd, onUpdate }: EquipmentTabProps) 
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AddEquipmentCard onClick={onAdd} />
+        <AddEquipmentCard onClick={handleAdd} />
         {filteredEquipment.map((item) => (
           <EquipmentCard
             key={item.id}
@@ -117,7 +122,7 @@ export function EquipmentTab({ equipment, onAdd, onUpdate }: EquipmentTabProps) 
         <EditAssetModal
           isOpen={isEditModalOpen}
           onClose={handleCloseModal}
-          onSuccess={handleSuccess}
+          onUpdate={handleSuccess}
           asset={selectedEquipment}
         />
       )}

@@ -7,15 +7,20 @@ import { FilterModal, FilterState, initialFilterState } from './FilterModal';
 
 interface POCTabProps {
   pocs: POC[];
-  onAdd: () => void;
+  onAdd?: () => void;
   onUpdate: () => void;
 }
 
-export function POCTab({ pocs, onAdd, onUpdate }: POCTabProps) {
+export function POCTab({ pocs, onUpdate }: POCTabProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPOC, setSelectedPOC] = useState<POC | null>(null);
+
+  const handleAdd = () => {
+    setSelectedPOC(null);
+    setIsEditModalOpen(true);
+  };
 
 
   const availableFilters = useMemo(() => {
@@ -105,7 +110,7 @@ export function POCTab({ pocs, onAdd, onUpdate }: POCTabProps) {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AddPOCCard onClick={onAdd} />
+        <AddPOCCard onClick={handleAdd} />
         {filteredPOCs.map((item) => (
           <POCCard
             key={item.id}

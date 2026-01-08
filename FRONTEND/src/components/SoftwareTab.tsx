@@ -8,14 +8,19 @@ import { useAuth } from '../context/AuthContext';
 
 interface SoftwareTabProps {
   software: Software[];
-  onAdd: () => void;
+  onAdd?: () => void;
   onUpdate: () => void;
 }
 
-export function SoftwareTab({ software, onAdd, onUpdate }: SoftwareTabProps) {
+export function SoftwareTab({ software, onUpdate }: SoftwareTabProps) {
   const { user } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSoftware, setSelectedSoftware] = useState<Software | null>(null);
+
+  const handleAdd = () => {
+    setSelectedSoftware(null);
+    setIsEditModalOpen(true);
+  };
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
 
@@ -86,7 +91,7 @@ export function SoftwareTab({ software, onAdd, onUpdate }: SoftwareTabProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AddSoftwareCard onClick={onAdd} />
+        <AddSoftwareCard onClick={handleAdd} />
         {filteredSoftware.map((item) => (
           <SoftwareCard key={item.id} software={item} onUpdate={onUpdate} />
         ))}
