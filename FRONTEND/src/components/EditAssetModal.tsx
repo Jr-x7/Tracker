@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Save, Calendar, User, Activity, DollarSign, Loader2, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,7 +13,7 @@ interface EditAssetModalProps {
     isOpen: boolean;
     onClose: () => void;
     onUpdate: () => void;
-    asset?: any; // Optional for creation
+    asset?: any;
     type: 'equipment' | 'software';
 }
 
@@ -21,11 +22,12 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
     const [loading, setLoading] = useState(false);
 
     // Form States
+    // ... (keep existing state declarations)
     const [name, setName] = useState('');
     const [image, setImage] = useState('');
-    const [modelNumber, setModelNumber] = useState(''); // New field
-    const [depreciationStatus, setDepreciationStatus] = useState('healthy'); // Renamed from healthStatus
-    const [assignedTo, setAssignedTo] = useState(''); // Text input now
+    const [modelNumber, setModelNumber] = useState('');
+    const [depreciationStatus, setDepreciationStatus] = useState('healthy');
+    const [assignedTo, setAssignedTo] = useState('');
     const [lastCalibrated, setLastCalibrated] = useState('');
     const [nextCalibration, setNextCalibration] = useState('');
 
@@ -47,18 +49,18 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
 
     const isEditing = !!asset;
 
+    // Populate form when editing
     useEffect(() => {
         if (isOpen) {
             if (asset) {
                 setName(asset.name || '');
                 setImage(asset.image || '');
                 setModelNumber(asset.modelNumber || '');
-                setDepreciationStatus(asset.healthStatus || 'healthy'); // Map healthStatus to depreciationStatus
-                setAssignedTo(asset.assignedTo?.name || asset.assignedTo || ''); // Handle object or string
+                setDepreciationStatus(asset.healthStatus || 'healthy');
+                setAssignedTo(asset.assignedTo?.name || '');
                 setLastCalibrated(asset.lastCalibrated || '');
                 setNextCalibration(asset.nextCalibration || '');
                 setDepreciation(asset.depreciation || 0);
-
                 setAssetTag(asset.assetTag || '');
                 setSerialNumber(asset.serialNumber || '');
                 setLocation(asset.location || '');
@@ -67,12 +69,10 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
                 setCostCenter(asset.costCenter || '');
                 setWarrantyExpiration(asset.warrantyExpiration || '');
                 setCategory(asset.category || '');
-
-                // Software specific
                 setLicenseValidity(asset.licenseValidity || '');
                 setSoftwareType(asset.softwareType || 'Subscription');
             } else {
-                // Reset for creation
+                // Reset for new asset
                 setName('');
                 setImage('');
                 setModelNumber('');
@@ -150,13 +150,22 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
         }
     };
 
+
+
+
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4">
+            {/* Backdrop - always visible and clickable */}
+            <div
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-all duration-200"
+                onClick={onClose}
+            />
 
-            <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-cyan-500/20 overflow-hidden animate-fadeIn max-h-[90vh] overflow-y-auto">
+            <div
+                className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-cyan-500/20 overflow-hidden animate-fadeIn overflow-y-auto w-full max-w-lg max-h-[90vh]"
+            >
                 <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-900 z-10">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                         {isEditing ? 'Edit' : 'Add New'} {type === 'equipment' ? 'Equipment' : 'Software'}
@@ -395,6 +404,7 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
                     </div>
                 </form>
             </div >
-        </div >
+        </div >,
+        document.body
     );
 }

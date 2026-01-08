@@ -4,17 +4,28 @@ import { HealthBadge } from './HealthBadge';
 import { CircularProgress } from './CircularProgress';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import { EditAssetModal } from './EditAssetModal';
 
 interface SoftwareCardProps {
   software: Software;
   onClick?: () => void;
   onUpdate?: () => void;
+  // Note: SoftwareCard uses internal state for modal but needs to bubble up for consistency if we want centralized modal logic?
+  // Wait, legacy SoftwareCard uses internal `isEditModalOpen`.
+  // The user wants "whichever card i try to edit...".
+  // SoftwareTab.tsx passes `onUpdate` but SoftwareCard has its own `onUpdate`?
+  // SoftwareTab ALSO has `handleEdit` which it doesn't seem to pass to SoftwareCard??
+  // In `SoftwareTab.tsx` (Step 2444): `<SoftwareCard key={item.id} software={item} onUpdate={onUpdate} />`
+  // It does NOT pass `onEdit`.
+  // SoftwareCard handles its own edit click: `onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true); }}`
+  // Accessing `EditAssetModal` directly inside `SoftwareCard`.
+  // I should Refactor SoftwareCard to accept `onEdit` from parent like Equipment, 
+  // OR update SoftwareCard to handle positioning internally.
+  // Refactoring is cleaner for code reuse.
+  onEdit?: (trigger: HTMLElement) => void;
 }
 
-export function SoftwareCard({ software, onClick, onUpdate }: SoftwareCardProps) {
+export function SoftwareCard({ software, onClick, onUpdate, onEdit }: SoftwareCardProps) {
   const { user } = useAuth();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const daysUntilCalibration = Math.ceil(
@@ -86,7 +97,12 @@ export function SoftwareCard({ software, onClick, onUpdate }: SoftwareCardProps)
                 {user?.role === 'admin' && (
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // setIsEditModalOpen(true); // OLD
+                        const cardElement = (e.currentTarget.closest('.group') as HTMLElement);
+                        onEdit?.(cardElement || e.currentTarget);
+                      }}
                       className="p-1.5 hover:bg-white/10 rounded-full text-gray-400 hover:text-purple-400 transition-colors"
                       title="Edit Software"
                     >
@@ -152,13 +168,7 @@ export function SoftwareCard({ software, onClick, onUpdate }: SoftwareCardProps)
         <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-gradient-to-br from-purple-400 to-pink-500 opacity-0 group-hover:opacity-10 rounded-full blur-2xl transition-opacity duration-500" />
       </div>
 
-      <EditAssetModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onUpdate={() => onUpdate?.()}
-        asset={software}
-        type="software"
-      />
+
     </>
   );
 }

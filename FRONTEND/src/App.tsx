@@ -8,7 +8,6 @@ import { POCTab } from './components/POCTab';
 import { TabType, Equipment, Software, POC } from './types';
 import { useAuth } from './context/AuthContext';
 import { LoginPage } from './components/LoginPage';
-
 import { BackToTop } from './components/BackToTop';
 
 function App() {
@@ -18,6 +17,7 @@ function App() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [software, setSoftware] = useState<Software[]>([]);
   const [pocs, setPocs] = useState<POC[]>([]);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   const fetchData = async () => {
     if (!user?.token) return;
@@ -64,8 +64,8 @@ function App() {
       <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYtMi42ODYgNi02cy0yLjY4Ni02LTYtNi02IDIuNjg2LTYgNiAyLjY4NiA2IDYgNiIgc3Ryb2tlPSJyZ2JhKDYsIDE4MiwgMjEyLCAwLjEpIi8+PC9nPjwvc3ZnPg==')] opacity-30 dark:opacity-10" />
 
       <div className="relative z-10">
-        <TopBar onRefresh={handleRefresh} />
-        <HeroStats />
+        <TopBar onRefresh={handleRefresh} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />
+        <HeroStats activeTab={activeTab} equipment={equipment} software={software} pocs={pocs} />
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
@@ -73,18 +73,21 @@ function App() {
             <EquipmentTab
               equipment={equipment}
               onUpdate={fetchData}
+              globalSearch={globalSearch}
             />
           )}
           {activeTab === 'software' && (
             <SoftwareTab
               software={software}
               onUpdate={fetchData}
+              globalSearch={globalSearch}
             />
           )}
           {activeTab === 'pocs' && (
             <POCTab
               pocs={pocs}
               onUpdate={fetchData}
+              globalSearch={globalSearch}
             />
           )}
         </div>
@@ -96,11 +99,8 @@ function App() {
             </p>
           </div>
         </div>
-        import {BackToTop} from './components/BackToTop';
-
-        // ... (inside App function, before closing div)
-        <BackToTop />
       </div>
+      <BackToTop />
     </div>
   );
 }

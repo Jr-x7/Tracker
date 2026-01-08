@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Save, FileText, Monitor, Terminal, Loader2, Activity, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -6,7 +7,7 @@ interface EditPOCModalProps {
     isOpen: boolean;
     onClose: () => void;
     onUpdate: () => void;
-    poc?: any; // Optional for creation
+    poc?: any;
 }
 
 export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalProps) {
@@ -71,6 +72,9 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
         }
     }, [isOpen, poc]);
 
+
+
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -124,11 +128,16 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4">
+            <div
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm transition-all duration-200"
+                onClick={onClose}
+            />
 
-            <div className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-cyan-500/20 overflow-hidden animate-fadeIn max-h-[90vh] overflow-y-auto">
+            <div
+                className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-cyan-500/20 overflow-hidden animate-fadeIn overflow-y-auto w-full max-w-lg max-h-[90vh]"
+            >
                 <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-900 z-10">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                         {isEditing ? 'Edit' : 'Add New'} POC
@@ -268,6 +277,7 @@ export function EditPOCModal({ isOpen, onClose, onUpdate, poc }: EditPOCModalPro
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

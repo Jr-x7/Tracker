@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Filter } from 'lucide-react';
 import { SoftwareCard, AddSoftwareCard } from './SoftwareCard';
 import { Software } from '../types';
@@ -10,9 +10,11 @@ interface SoftwareTabProps {
   software: Software[];
   onAdd?: () => void;
   onUpdate: () => void;
+  globalSearch?: string;
 }
 
-export function SoftwareTab({ software, onUpdate }: SoftwareTabProps) {
+export function SoftwareTab({ software, onUpdate, globalSearch = '' }: SoftwareTabProps) {
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
   const { user } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSoftware, setSelectedSoftware] = useState<Software | null>(null);
@@ -36,8 +38,9 @@ export function SoftwareTab({ software, onUpdate }: SoftwareTabProps) {
   }, [software]);
 
   const filteredSoftware = software.filter(item => {
-    const matchesSearch = !filters.search ||
-      item.name.toLowerCase().includes(filters.search.toLowerCase());
+    const searchTerm = globalSearch || filters.search;
+    const matchesSearch = !searchTerm ||
+      item.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesHealth = filters.healthStatus === 'all' || item.healthStatus === filters.healthStatus;
 
@@ -51,6 +54,8 @@ export function SoftwareTab({ software, onUpdate }: SoftwareTabProps) {
   });
 
   const activeFilterCount = Object.entries(filters).filter(([k, v]) => k !== 'search' && v !== 'all').length;
+
+
 
 
   const handleEdit = (item: Software) => {
@@ -76,6 +81,7 @@ export function SoftwareTab({ software, onUpdate }: SoftwareTabProps) {
           <p className="text-gray-500 dark:text-gray-400">Manage software licenses and subscriptions</p>
         </div>
         <button
+          ref={filterButtonRef}
           onClick={() => setIsFilterOpen(true)}
           className={`p-2 rounded-xl border transition-all relative ${activeFilterCount > 0
             ? 'bg-cyan-50 border-cyan-200 text-cyan-600 dark:bg-cyan-900/30 dark:border-cyan-700 dark:text-cyan-400'
@@ -93,7 +99,12 @@ export function SoftwareTab({ software, onUpdate }: SoftwareTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AddSoftwareCard onClick={handleAdd} />
         {filteredSoftware.map((item) => (
-          <SoftwareCard key={item.id} software={item} onUpdate={onUpdate} />
+          <SoftwareCard
+            key={item.id}
+            software={item}
+            onUpdate={onUpdate}
+            onEdit={() => handleEdit(item)}
+          />
         ))}
       </div>
 

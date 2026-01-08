@@ -1,5 +1,25 @@
-import { X, Search, Filter as FilterIcon } from 'lucide-react';
-import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Filter as FilterIcon, X, Search } from 'lucide-react';
+
+export interface FilterState {
+    search: string;
+    healthStatus: string;
+    status: string;
+    location: string;
+    category: string;
+    ownedBy: string;
+    assignedTo: string;
+}
+
+export const initialFilterState: FilterState = {
+    search: '',
+    healthStatus: 'all',
+    status: 'all',
+    location: 'all',
+    category: 'all',
+    ownedBy: 'all',
+    assignedTo: 'all'
+};
 
 interface FilterModalProps {
     isOpen: boolean;
@@ -7,65 +27,31 @@ interface FilterModalProps {
     filters: FilterState;
     onFilterChange: (filters: FilterState) => void;
     availableFilters?: {
-        categories: string[];
         locations: string[];
-        statuses: string[];
+        categories: string[];
         owners: string[];
+        assignees?: string[];
     };
-    triggerRef?: React.RefObject<HTMLElement>;
+    triggerRef?: React.RefObject<HTMLButtonElement>;
 }
 
-export interface FilterState {
-    search: string;
-    healthStatus: string;
-    status: string;
-    category: string;
-    location: string;
-    ownedBy: string;
-}
-
-export const initialFilterState: FilterState = {
-    search: '',
-    healthStatus: 'all',
-    status: 'all',
-    category: 'all',
-    location: 'all',
-    ownedBy: 'all'
-};
-
-export function FilterModal({ isOpen, onClose, filters, onFilterChange, availableFilters, triggerRef }: FilterModalProps) {
+export function FilterModal({ isOpen, onClose, filters, onFilterChange, availableFilters }: FilterModalProps) {
     if (!isOpen) return null;
 
     const handleChange = (key: keyof FilterState, value: string) => {
         onFilterChange({ ...filters, [key]: value });
     };
 
-    // Calculate position
-    const style: React.CSSProperties = {};
-    if (triggerRef?.current) {
-        const rect = triggerRef.current.getBoundingClientRect();
-        style.top = rect.bottom + 8;
-        style.right = window.innerWidth - rect.right;
-        style.position = 'absolute';
-    } else {
-        style.top = '10%';
-        style.left = '50%';
-        style.transform = 'translateX(-50%)';
-        style.position = 'fixed';
-    }
-
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 z-[100]"
-            onClick={onClose} // Close when clicking outside
+            className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={onClose}
         >
-            {/* Invisible backdrop to capture outside clicks */}
-
             <div
                 className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 animate-fadeIn"
-                style={style}
-                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                onClick={(e) => e.stopPropagation()}
             >
+                {/* ... content ... */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -161,7 +147,7 @@ export function FilterModal({ isOpen, onClose, filters, onFilterChange, availabl
                         </div>
 
                         {/* Owned By */}
-                        <div className="space-y-2 col-span-2">
+                        <div className="space-y-2">
                             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Owner</label>
                             <select
                                 value={filters.ownedBy}
@@ -174,6 +160,23 @@ export function FilterModal({ isOpen, onClose, filters, onFilterChange, availabl
                                 ))}
                             </select>
                         </div>
+
+                        {/* Assigned To */}
+                        {availableFilters?.assignees && (
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Assigned To</label>
+                                <select
+                                    value={filters.assignedTo}
+                                    onChange={(e) => handleChange('assignedTo', e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                                >
+                                    <option value="all">All Assignees</option>
+                                    {availableFilters.assignees.map(assignee => (
+                                        <option key={assignee} value={assignee}>{assignee}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </div>
 
                     <div className="pt-6 flex justify-between items-center border-t border-gray-100 dark:border-gray-800">
@@ -192,6 +195,7 @@ export function FilterModal({ isOpen, onClose, filters, onFilterChange, availabl
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Filter } from 'lucide-react';
 import { EquipmentCard, AddEquipmentCard } from './EquipmentCard';
 import { Equipment } from '../types';
@@ -9,9 +9,10 @@ interface EquipmentTabProps {
   equipment: Equipment[];
   onAdd?: () => void;
   onUpdate: () => void;
+  globalSearch?: string;
 }
 
-export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
+export function EquipmentTab({ equipment, onUpdate, globalSearch = '' }: EquipmentTabProps) {
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
@@ -30,17 +31,19 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
     const categories = Array.from(new Set(equipment.map(e => e.modelCategory || e.category).filter(Boolean) as string[]));
     const statuses = ['active', 'maintenance', 'retired'];
     const owners = Array.from(new Set(equipment.map(e => e.ownedBy).filter(Boolean) as string[]));
+    const assignees = Array.from(new Set(equipment.map(e => e.assignedTo?.name).filter(Boolean) as string[]));
 
-    return { locations, categories, statuses, owners };
+    return { locations, categories, statuses, owners, assignees };
   }, [equipment]);
 
   const filteredEquipment = equipment.filter(item => {
+    const searchTerm = globalSearch || filters.search;
     const matchesSearch =
-      item.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.assetTag?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.serialNumber?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.assignedTo?.name.toLowerCase().includes(filters.search.toLowerCase());
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.assetTag?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.assignedTo?.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesHealth = filters.healthStatus === 'all' || item.healthStatus === filters.healthStatus;
 
@@ -51,11 +54,14 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
       item.category === filters.category ||
       item.modelCategory === filters.category;
     const matchesOwner = filters.ownedBy === 'all' || item.ownedBy === filters.ownedBy;
+    const matchesAssignedTo = filters.assignedTo === 'all' || item.assignedTo?.name === filters.assignedTo;
 
-    return matchesSearch && matchesHealth && matchesStatus && matchesLocation && matchesCategory && matchesOwner;
+    return matchesSearch && matchesHealth && matchesStatus && matchesLocation && matchesCategory && matchesOwner && matchesAssignedTo;
   });
 
   const activeFilterCount = Object.entries(filters).filter(([k, v]) => k !== 'search' && v !== 'all').length;
+
+
 
   const handleEdit = (item: Equipment) => {
     setSelectedEquipment(item);
@@ -104,7 +110,6 @@ export function EquipmentTab({ equipment, onUpdate }: EquipmentTabProps) {
         filters={filters}
         onFilterChange={setFilters}
         availableFilters={availableFilters}
-        triggerRef={filterButtonRef}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

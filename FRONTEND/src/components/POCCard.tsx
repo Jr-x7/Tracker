@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 interface POCCardProps {
   poc: POC;
   onUpdate?: () => void;
-  onEdit: () => void;
+  onEdit: (trigger: HTMLElement) => void;
 }
 
 export function POCCard({ poc, onUpdate, onEdit }: POCCardProps) {
@@ -85,7 +85,11 @@ export function POCCard({ poc, onUpdate, onEdit }: POCCardProps) {
               {user?.role === 'admin' && (
                 <div className="flex items-center gap-1 opacity-100 transition-opacity z-10">
                   <button
-                    onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const cardElement = (e.currentTarget.closest('.group') as HTMLElement);
+                      onEdit(cardElement || e.currentTarget);
+                    }}
                     className="p-1.5 hover:bg-emerald-500/10 rounded-full text-gray-400 hover:text-emerald-500 transition-colors"
                     title="Edit POC"
                   >

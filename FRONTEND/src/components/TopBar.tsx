@@ -1,4 +1,4 @@
-import { Search, Moon, Sun, RefreshCw, User, LogOut, Users } from 'lucide-react';
+import { Search, Moon, Sun, RefreshCw, User, LogOut, Users, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { UserManagementModal } from './UserManagementModal';
@@ -7,9 +7,11 @@ import { useState } from 'react';
 
 interface TopBarProps {
   onRefresh: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
-export function TopBar({ onRefresh }: TopBarProps) {
+export function TopBar({ onRefresh, searchQuery, onSearchChange }: TopBarProps) {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -35,13 +37,36 @@ export function TopBar({ onRefresh }: TopBarProps) {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors group-hover:text-cyan-500" />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && onSearchChange(searchQuery)}
                 placeholder="Search assets, equipment, POCs..."
-                className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100/80 dark:bg-gray-800/50 border border-gray-200 dark:border-cyan-500/20
+                className="w-full pl-12 pr-32 py-3 rounded-xl bg-gray-100/80 dark:bg-gray-800/50 border border-gray-200 dark:border-cyan-500/20
                 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 dark:focus:border-cyan-400
                 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400
                 transition-all duration-300 backdrop-blur-sm
                 hover:border-cyan-400 dark:hover:border-cyan-500"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => onSearchChange('')}
+                  className="absolute right-24 top-1/2 transform -translate-y-1/2 p-1 rounded-lg
+                  text-gray-400 hover:text-gray-600 dark:hover:text-gray-300
+                  hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
+                  title="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={() => onSearchChange(searchQuery)}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1.5 rounded-lg
+                bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600
+                text-white text-sm font-medium transition-all duration-300
+                hover:shadow-lg hover:shadow-cyan-500/50"
+              >
+                Search
+              </button>
             </div>
           </div>
 

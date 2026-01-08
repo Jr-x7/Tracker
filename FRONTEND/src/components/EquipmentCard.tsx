@@ -15,7 +15,7 @@ import { EditAssetModal } from './EditAssetModal';
 interface EquipmentCardProps {
   equipment: Equipment;
   onUpdate?: () => void;
-  onEdit?: () => void;
+  onEdit?: (trigger: HTMLElement) => void;
 }
 
 export function EquipmentCard({ equipment, onUpdate, onEdit }: EquipmentCardProps) {
@@ -104,7 +104,8 @@ export function EquipmentCard({ equipment, onUpdate, onEdit }: EquipmentCardProp
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEdit?.();
+                      const cardElement = (e.currentTarget.closest('.group') as HTMLElement);
+                      onEdit?.(cardElement || e.currentTarget);
                     }}
                     className="p-1.5 hover:bg-cyan-500/10 rounded-full text-gray-400 hover:text-cyan-500 transition-colors"
                     title="Edit"

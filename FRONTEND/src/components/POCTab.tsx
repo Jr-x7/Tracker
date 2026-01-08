@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Plus, Filter } from 'lucide-react';
 import { POCCard, AddPOCCard } from './POCCard';
 import { POC } from '../types';
@@ -9,9 +9,11 @@ interface POCTabProps {
   pocs: POC[];
   onAdd?: () => void;
   onUpdate: () => void;
+  globalSearch?: string;
 }
 
-export function POCTab({ pocs, onUpdate }: POCTabProps) {
+export function POCTab({ pocs, onUpdate, globalSearch = '' }: POCTabProps) {
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -40,11 +42,12 @@ export function POCTab({ pocs, onUpdate }: POCTabProps) {
   // ... loadPOCs ...
 
   const filteredPOCs = pocs.filter(item => {
-    const matchesSearch = !filters.search ||
-      item.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.primaryPOC?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.secondaryPOC?.toLowerCase().includes(filters.search.toLowerCase());
+    const searchTerm = globalSearch || filters.search;
+    const matchesSearch = !searchTerm ||
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.primaryPOC?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.secondaryPOC?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesHealth = filters.healthStatus === 'all' || item.status === filters.healthStatus;
 
@@ -60,6 +63,8 @@ export function POCTab({ pocs, onUpdate }: POCTabProps) {
   });
 
   const activeFilterCount = Object.entries(filters).filter(([k, v]) => k !== 'search' && v !== 'all').length;
+
+
 
   const handleEdit = (item: POC) => {
     setSelectedPOC(item);
@@ -85,6 +90,7 @@ export function POCTab({ pocs, onUpdate }: POCTabProps) {
         </div>
         <div className="flex gap-3">
           <button
+            ref={filterButtonRef}
             onClick={() => setIsFilterOpen(true)}
             className={`p-2 rounded-xl border transition-all relative ${activeFilterCount > 0
               ? 'bg-cyan-50 border-cyan-200 text-cyan-600 dark:bg-cyan-900/30 dark:border-cyan-700 dark:text-cyan-400'

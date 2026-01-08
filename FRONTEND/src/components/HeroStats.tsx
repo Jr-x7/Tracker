@@ -1,6 +1,5 @@
-import { TrendingUp, Activity, DollarSign, Calendar, AlertCircle } from 'lucide-react';
+import { TrendingUp, Activity, DollarSign, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { fetchStats } from '../services/api';
 
 interface StatCardProps {
   title: string;
@@ -88,38 +87,90 @@ function StatCard({ title, value, suffix = '', icon, gradient, delay = 0 }: Stat
   );
 }
 
-export function HeroStats() {
-  const [stats, setStats] = useState({
-    totalAssets: 0,
-    healthyAssets: 0,
-    depreciation: 0,
-    upcomingCalibrations: 0
-  });
+interface HeroStatsProps {
+  activeTab: 'equipment' | 'software' | 'pocs';
+  equipment: any[];
+  software: any[];
+  pocs: any[];
+}
 
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const data = await fetchStats();
-        setStats(data);
-      } catch (error) {
-        console.error('Error loading stats:', error);
-      }
+export function HeroStats({ activeTab, equipment, software, pocs }: HeroStatsProps) {
+  const calculateStats = () => {
+    let data: any[] = [];
+    let labels = {
+      total: 'Total Assets',
+      healthy: 'Healthy Assets',
+      depreciation: 'Depreciation',
+      upcoming: 'Upcoming Calibrations'
     };
-    loadStats();
-  }, []);
+
+    switch (activeTab) {
+      case 'equipment':
+        data = equipment;
+        labels = {
+          total: 'Total Equipment',
+          healthy: 'Healthy Equipment',
+          depreciation: 'Avg Depreciation',
+          upcoming: 'Upcoming Calibrations'
+        };
+        break;
+      case 'software':
+        data = software;
+        labels = {
+          total: 'Total Applications',
+          healthy: 'Active Licenses',
+          depreciation: 'Avg Depreciation',
+          upcoming: 'License Renewals'
+        };
+        break;
+      case 'pocs':
+        data = pocs;
+        labels = {
+          total: 'Total POCs',
+          healthy: 'Active POCs',
+          depreciation: 'Avg Progress',
+          upcoming: 'Pending Reviews'
+        };
+        break;
+    }
+
+    const totalAssets = data.length;
+    const healthyCount = data.filter(item => item.healthStatus === 'healthy' || item.status === 'active').length;
+    const healthyPercentage = totalAssets > 0 ? Math.round((healthyCount / totalAssets) * 100) : 0;
+
+    const avgDepreciation = totalAssets > 0
+      ? Math.round(data.reduce((sum, item) => sum + (item.depreciation || 0), 0) / totalAssets)
+      : 0;
+
+    const upcomingCount = data.filter(item => {
+      if (!item.nextCalibration) return false;
+      const daysUntil = Math.ceil((new Date(item.nextCalibration).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      return daysUntil <= 30 && daysUntil >= 0;
+    }).length;
+
+    return {
+      totalAssets,
+      healthyAssets: healthyPercentage,
+      depreciation: avgDepreciation,
+      upcomingCalibrations: upcomingCount,
+      labels
+    };
+  };
+
+  const stats = calculateStats();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Assets"
+          title={stats.labels.total}
           value={stats.totalAssets}
           icon={<Activity className="w-6 h-6" />}
           gradient="from-cyan-400 to-blue-500"
           delay={0}
         />
         <StatCard
-          title="Healthy Assets"
+          title={stats.labels.healthy}
           value={stats.healthyAssets}
           suffix="%"
           icon={<Activity className="w-6 h-6" />}
@@ -127,7 +178,7 @@ export function HeroStats() {
           delay={100}
         />
         <StatCard
-          title="Depreciation"
+          title={stats.labels.depreciation}
           value={stats.depreciation}
           suffix="%"
           icon={<DollarSign className="w-6 h-6" />}
@@ -135,7 +186,7 @@ export function HeroStats() {
           delay={200}
         />
         <StatCard
-          title="Upcoming Calibrations"
+          title={stats.labels.upcoming}
           value={stats.upcomingCalibrations}
           icon={<Calendar className="w-6 h-6" />}
           gradient="from-orange-400 to-red-500"
