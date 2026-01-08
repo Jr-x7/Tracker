@@ -1,0 +1,7 @@
+# Ignore dependencies and secrets
+**/node_modules/
+**/.env
+deploy.zip
+*.log
+.vscode
+.git
