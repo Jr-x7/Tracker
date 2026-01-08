@@ -140,6 +140,21 @@ export function FilterModal({ isOpen, onClose, filters, onFilterChange, availabl
                                 ))}
                             </select>
                         </div>
+
+                        {/* Owned By */}
+                        <div className="space-y-2 col-span-2">
+                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Owner</label>
+                            <select
+                                value={filters.ownedBy}
+                                onChange={(e) => handleChange('ownedBy', e.target.value)}
+                                className="w-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500 appearance-none"
+                            >
+                                <option value="all">All Owners</option>
+                                {availableFilters?.owners.map(owner => (
+                                    <option key={owner} value={owner}>{owner}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="pt-6 flex justify-between items-center border-t border-gray-100 dark:border-gray-800">

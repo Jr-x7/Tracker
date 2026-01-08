@@ -111,8 +111,6 @@ export function EditAssetModal({ isOpen, onClose, onUpdate, asset, type }: EditA
             nextCalibration: nextCalibration || undefined,
             depreciation: Number(depreciation),
             licenseValidity: type === 'software' ? (licenseValidity || undefined) : undefined,
-            depreciation: Number(depreciation),
-            licenseValidity: type === 'software' ? (licenseValidity || undefined) : undefined,
             softwareType: type === 'software' ? softwareType : undefined,
             assetTag,
             serialNumber,

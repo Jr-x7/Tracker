@@ -14,6 +14,9 @@ interface POCTabProps {
 export function POCTab({ pocs, onAdd, onUpdate }: POCTabProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedPOC, setSelectedPOC] = useState<POC | null>(null);
+
 
   const availableFilters = useMemo(() => {
     // POCs don't rely have locations or owners in the same way, but we can map what we have
@@ -117,7 +120,7 @@ export function POCTab({ pocs, onAdd, onUpdate }: POCTabProps) {
         <EditPOCModal
           isOpen={isEditModalOpen}
           onClose={handleCloseModal}
-          onSuccess={handleSuccess}
+          onUpdate={handleSuccess}
           poc={selectedPOC}
         />
       )}

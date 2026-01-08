@@ -3,13 +3,7 @@ const { CosmosClient } = require('@azure/cosmos');
 const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
-
-const endpoint = process.env.COSMOS_ENDPOINT;
-const key = process.env.COSMOS_KEY;
-const databaseId = 'Trackydb';
-const containerId = 'equipment';
-
-const client = new CosmosClient({ endpoint, key });
+const { assetsContainer, usersContainer, client } = require('./config/db');
 
 // Helper to normalize keys (remove spaces, lowercase)
 const normalize = (str) => str ? str.toString().trim().toLowerCase().replace(/\s+/g, '') : '';
@@ -24,25 +18,37 @@ const getVal = (row, targetKey) => {
 
 async function importAssets() {
     try {
-        const database = client.database(databaseId);
-        const container = database.container(containerId);
+        console.log("Starting Robust Asset Import with User Mapping...");
 
+        // 1. Fetch Users to build Mapping
+        console.log("Fetching users from DB...");
+        const { resources: users } = await usersContainer.items.query("SELECT * FROM c").fetchAll();
+        console.log(`Found ${users.length} users.`);
+        
+        const userMap = new Map();
+        users.forEach(u => {
+            if (u.name) userMap.set(u.name.toLowerCase().trim(), u);
+            if (u.email) userMap.set(u.email.toLowerCase().trim(), u);
+        });
+
+        // 2. Read Excel
         console.log("Reading assets.xlsx...");
         const filePath = 'c:\\Users\\PnRIn\\OneDrive\\Desktop\\TRACKER\\assets.xlsx';
         const workbook = XLSX.readFile(filePath);
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rawData = XLSX.utils.sheet_to_json(sheet);
+        console.log(`Found ${rawData.length} rows in Excel.`);
 
-        console.log(`Found ${rawData.length} rows.`);
-
-        // Optional: Wipe container?
-        // Logic: Provide fresh start as requested "all data from excel to db"
+        // 3. Wipe and Re-Import
         console.log("Wiping existing equipment...");
-        const { resources: items } = await container.items.query("SELECT * FROM c").fetchAll();
+        // Use a more robust wipe if needed, but fetchAll+delete is standard for small datasets
+        const { resources: items } = await assetsContainer.items.query("SELECT * FROM c").fetchAll();
         for (const item of items) {
-             await container.item(item.id, item.id).delete();
+             await assetsContainer.item(item.id, item.id).delete();
         }
         console.log("Wipe complete.");
+
+        let matchCount = 0;
 
         for (const row of rawData) {
             const assetTag = getVal(row, 'Asset tag') || `TAG-${Math.floor(Math.random()*10000)}`;
@@ -54,12 +60,35 @@ async function importAssets() {
             if (rawStatus && rawStatus.toLowerCase().includes('retired')) status = 'retired';
             if (rawStatus && rawStatus.toLowerCase().includes('stock')) status = 'maintenance';
             
-            // Map Health (simulated based on status or random if unknown)
+            // Map Health
             let healthStatus = 'healthy';
             if (status === 'retired') healthStatus = 'critical';
 
+            // Resolve Assigned User
+            const assignedName = getVal(row, 'Assigned to') || getVal(row, 'Assigned to Display Name');
+            let assignedUser = {
+                name: assignedName || 'Unassigned',
+                id: 'unassigned',
+                email: ''
+            };
+
+            if (assignedName) {
+                const lowerName = assignedName.toLowerCase().trim();
+                const matchedUser = userMap.get(lowerName);
+                if (matchedUser) {
+                    assignedUser = {
+                        name: matchedUser.name,
+                        id: matchedUser.id,
+                        email: matchedUser.email
+                    };
+                    matchCount++;
+                } else {
+                    // console.log(`Warning: User '${assignedName}' not found in DB.`);
+                }
+            }
+
             const newItem = {
-                id: assetTag, // using asset tag as ID for stability or UUID
+                id: assetTag, 
                 name: displayName,
                 description: getVal(row, 'Notes') || '',
                 
@@ -73,29 +102,25 @@ async function importAssets() {
                 lifecycleStageStatus: getVal(row, 'Life Cycle Stage Status'),
                 status: status,
                 healthStatus: healthStatus,
-
+                
                 // Categorization
                 modelCategory: getVal(row, 'Model category'),
-                ownedBy: getVal(row, 'Owned by'), // e.g. "Contoso"
+                ownedBy: getVal(row, 'Owned by'), 
                 
                 // Finance & Org
                 costCenter: getVal(row, 'Cost center'),
                 costCenterDisplay: getVal(row, 'Cost center Display'),
-                department: getVal(row, 'Department'), // New
+                department: getVal(row, 'Department'),
                 warrantyExpiration: getVal(row, 'Warranty expiration'),
                 
                 // Assignment
-                assignedToDisplayName: getVal(row, 'Assigned to Display Name'), // New
-                assignedTo: {
-                    name: getVal(row, 'Assigned to') || getVal(row, 'Assigned to Display Name') || 'Unassigned',
-                    id: 'temp-id', 
-                    email: ''
-                },
+                assignedToDisplayName: assignedUser.name, 
+                assignedTo: assignedUser,
                 
-                // Defaults for required UI fields not in Excel
+                // Defaults
                 manufacturer: getVal(row, 'Manufacturer') || '',
                 modelNumber: getVal(row, 'Model') || '',
-                image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca4?auto=format&fit=crop&q=80&w=1000', // Generic laptop
+                image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca4?auto=format&fit=crop&q=80&w=1000', 
                 purchaseDate: new Date().toISOString(),
                 lastCalibrated: new Date().toISOString(),
                 nextCalibration: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
@@ -103,11 +128,13 @@ async function importAssets() {
                 type: 'equipment'
             };
             
-            const { resource } = await container.items.create(newItem);
-            console.log(`Imported: ${displayName} (${assetTag})`);
+            await assetsContainer.items.create(newItem);
+            process.stdout.write('.');
         }
 
-        console.log("Import finished successfully.");
+        console.log(`\nImport finished. Matched ${matchCount} users to assets.`);
+        // Force cleanup if needed
+        // client.dispose(); 
 
     } catch (err) {
         console.error("Import failed:", err);
