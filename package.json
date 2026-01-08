@@ -1,0 +1,14 @@
+{
+  "name": "tracker-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "install-all": "npm install && cd backend && npm install && cd ../FRONTEND && npm install",
+    "build": "cd FRONTEND && npm run build",
+    "postbuild": "mkdir -p backend/public && cp -r FRONTEND/dist/* backend/public/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
